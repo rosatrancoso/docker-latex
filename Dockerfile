@@ -2,12 +2,10 @@ FROM ubuntu:latest
 MAINTAINER Rosa <rosatrancoso@gmail.com>
 
 RUN apt-get -y update &&\
-    apt-get install -y unzip wget vim imagemagick
-
-RUN apt-get install -y texlive-latex-extra  texlive-generic-extra
-RUN apt-get install -y latexmk
-
-RUN apt-get remove -y texlive-latex-base-doc &&\
+    apt-get install -y unzip wget vim imagemagick &&\
+                       texlive-latex-extra texlive-generic-extra &&\
+                       latexmk &&\
+    apt-get remove -y texlive-latex-base-doc &&\
     apt-get -y clean &&\
     rm -rf /var/lib/apt/lists/* &&\
     rm -rf /tmp/*
