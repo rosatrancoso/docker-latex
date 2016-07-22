@@ -18,7 +18,7 @@ RUN cd /tmp &&\
 RUN cd /tmp &&\
     wget http://mirrors.ctan.org/macros/latex/contrib/titlesec.zip &&\
     unzip titlesec.zip  &&\
-    cp -rpv titlesec/* /usr/share/texlive/texmf-dist/tex/latex/titlesec/  
+    cp -rpv titlesec/* /usr/share/texlive/texmf-dist/tex/latex/titlesec/ &&\ 
     rm -rf /tmp/*
 
 
