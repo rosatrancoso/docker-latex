@@ -3,4 +3,3 @@
 Usage:
 
     latexmk -pdf report.tex
-    
