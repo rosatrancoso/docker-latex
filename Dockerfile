@@ -1,6 +1,8 @@
 FROM ubuntu:latest
 MAINTAINER Rosa <rosatrancoso@gmail.com>
 
+ENV DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+
 RUN apt-get -y update &&\
     apt-get install -y unzip wget vim imagemagick \
                         texlive-latex-extra texlive-generic-extra \
