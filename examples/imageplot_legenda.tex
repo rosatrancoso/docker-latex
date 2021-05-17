@@ -1,0 +1,248 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8x]{inputenc}
+% \usepackage[portuguese]{babel}  % para por os títulos em português
+
+\usepackage{url}                % \url{...}
+
+\usepackage{graphicx}
+\usepackage[center,small]{caption} 
+\setlength{\captionmargin}{0.5cm}       % Margem das legendas
+\newcommand{\mycaption}[1]{\caption{\emph{#1}}}
+
+\usepackage[listofformat=parens]{subfig} % subfiguras
+
+\usepackage[table]{xcolor}              % Cor nas linhas das tabelas --> \rowcolors {rows}{odd - row color}{even - row color}
+\usepackage[figuresright]{rotating}     % Rodar figuras e tabelas (fundo da imagem para a direita) % \begin{sideways}
+
+\usepackage{afterpage}              % obriga a colocar texto só depois de certa imagem (\clearpage)
+
+\usepackage{placeins}               % obriga a colocar todas as imagens antes do proximo bloco de texto.
+
+\usepackage{soul}                   % \hl{} - highlight text
+
+\usepackage{moreverb}               % listing
+
+\usepackage{amsmath}
+
+\usepackage{ctable}                 % toprule, midrule
+% \newcolumntype{Y}{>{\small\centering\arraybackslash}X}  
+\renewcommand{\tabularxcolumn}[1]{>{\small}m{#1}}
+\usepackage{multirow}
+\usepackage[pdftex]{hyperref}       % incluir bookmarks no pdf
+
+% \usepackage{a4wide}                 % para ocupar os espaço todo
+\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+\usepackage{natbib}  
+\bibliographystyle{chicago}
+
+%opening
+\title{image.plot legend types}
+\author{Ana Rosa Trancoso}
+
+\begin{document}
+
+\maketitle
+
+% \begin{abstract}
+% Summary of what is being delivered to Brisa for Road Traffic Warnings, and some methodologies to forecast derived variables, such as visibility, fog, ice and road temperature.
+% \end{abstract}
+
+Begin with:
+
+\begin{verbatim}
+library(fields)
+library(maps)
+library(mapdata)
+\end{verbatim} 
+
+
+Given matrices of longitude (xlon), latitude (xlat) and visibility (visib), the normal image.plot is (figure \ref{fig:normal}):
+
+\begin{verbatim}
+image.plot(xlon,xlat,visib)
+map(database="worldHires", region=c("Portugal", "Spain"), add=TRUE, col="grey")
+\end{verbatim} 
+
+
+With a blue scale (figure \ref{fig:blues}):
+
+\begin{verbatim}
+library(RColorBrewer)
+library(classInt)
+(zlim = range(pretty(range(visib))))
+
+nclr = 9
+(class = classIntervals(visib, nclr, "pretty"))
+(pal = brewer.pal(nclr, "Blues"))
+(colcode = findColours(class, pal))
+
+image.plot(xlon,xlat,visib, zlim=range(class$brks),
+           col=attr(colcode, "palette"), 
+           axis.args=list(at=class$brks, labels=class$brks))
+
+\end{verbatim} 
+
+
+\begin{figure}[!htp]
+  \centering
+  \subfloat[normal legend.]{\label{fig:normal}\includegraphics[page=1,width=0.45\columnwidth]{plot_visib_D3_legenda.pdf}}
+  \subfloat[blues palette]{\label{fig:blues}\includegraphics[page=2,width=0.45\columnwidth]{plot_visib_D3_legenda.pdf}}
+  \caption{not specified breaks.}  
+  \label{fig:1}
+\end{figure}
+
+\FloatBarrier
+% brksnames = c("Nev. Denso", "Nev. Espesso", "Nevoeiro", "Neblina", "Visib. Fraca", "Visib. Moderada", "Boa Visibilidade"); length(brksnames)
+With specified colors, first define the palette (pal), classes (class) and colcode:
+
+\begin{verbatim}
+brks = c(0,40,200,1000,2000,4000,10000,40000)/1000.; length(brks) # nclr + 1
+brksnames = c("Dense fog", "Thick fog", "Fog", "Mist", "Weak visib.", 
+              "Moderate visib.", "Good visib."); length(brksnames)
+
+(pal = rev(c(brewer.pal(3, "Blues"), "green", "yellow", "orange", "red")))
+(nclr = length(pal))
+
+(class = classIntervals(visib, n=nclr, style="fixed", fixedBreaks=brks))
+(colcode = findColours(class, pal))
+\end{verbatim} 
+
+The normal plot with specified colors is (figure \ref{fig:spec:breaks}):
+
+\begin{verbatim}
+image.plot(xlon,xlat,visib,zlim=range(class$brks),
+           col=attr(colcode, "palette"),  
+           breaks=class$brks)
+\end{verbatim} 
+
+Specified colors and breaks in labels is (figure \ref{fig:spec:breaks_labels}):
+
+\begin{verbatim}
+image.plot(xlon,xlat,l1$visib,  zlim=range(class$brks),
+           col=attr(colcode, "palette"), 
+           breaks=class$brks,
+           axis.args=list(at=class$brks, labels=class$brks))
+\end{verbatim} 
+
+Categorical legend with intervals is (figure \ref{fig:spec:categ}):
+
+\begin{verbatim}
+poly.image(xlon,xlat,l1$visib, zlim=range(class$brks),
+           col=attr(colcode, "palette"), 
+           breaks=class$brks)
+legend("bottomright", legend=names(attr(colcode, "table")), fill=attr(colcode, "palette"))
+\end{verbatim} 
+
+
+Categorical legend with names is (figure \ref{fig:spec:categ_names}):
+
+\begin{verbatim}
+poly.image(xlon,xlat,l1$visib, zlim=range(class$brks),
+           col=attr(colcode, "palette"), 
+           breaks=class$brks)
+legend("bottomright", legend=brksnames, fill=attr(colcode, "palette"))
+
+\end{verbatim} 
+
+\begin{figure}[!htp]
+  \centering
+  \subfloat[normal]{\label{fig:spec:breaks}\includegraphics[page=3,width=0.45\columnwidth]{plot_visib_D3_legenda.pdf}}
+  \subfloat[breaks in labels]{\label{fig:spec:breaks_labels}\includegraphics[page=4,width=0.45\columnwidth]{plot_visib_D3_legenda.pdf}}\\
+  \subfloat[categorical with intervals]{\label{fig:spec:categ}\includegraphics[page=5,width=0.45\columnwidth]{plot_visib_D3_legenda.pdf}}    
+  \subfloat[categorical with names]{\label{fig:spec:categ_names}\includegraphics[page=6,width=0.45\columnwidth]{plot_visib_D3_legenda.pdf}}\\
+  \caption{Specified colors.} 
+  \label{fig:spec1}
+\end{figure}
+
+Specified colors with intervals, with split.screen is (figure \ref{fig:spec:int}):
+
+\begin{verbatim}
+split.screen( rbind(c(0, .8,0,1), c(.8,1,0,1)))
+screen(1)
+poly.image(xlon,xlat,l1$visib, zlim=range(class$brks),
+           col=attr(colcode, "palette"), 
+           breaks=class$brks)
+map(database="worldHires", region=c("Portugal", "Spain"), add=TRUE, col="grey")
+
+screen(2)
+(atx = seq(brks[1], brks[length(brks)],length.out=length(brks)))
+(atxmid = ( atx[2:length(atx)] + atx[1:(length(atx)-1)])/2)
+image.plot(legend.only=TRUE, smallplot=c(.1,.2, .2,.8), 
+           zlim=range(class$brks), 
+           col=attr(colcode, "palette"), 
+           axis.args=list(at=atxmid, labels=names(attr(colcode, "table"))))
+
+close.screen( all=TRUE)
+\end{verbatim} 
+
+Specified colors with names, with split.screen is (figure \ref{fig:spec:names}):
+
+\begin{verbatim}
+split.screen( rbind(c(0, .8,0,1), c(.8,1,0,1)))
+screen(1)
+poly.image(xlon,xlat,l1$visib,   zlim=range(class$brks),
+           col=attr(colcode, "palette"), 
+           breaks=class$brks)
+map(database="worldHires", region=c("Portugal", "Spain"), add=TRUE, col="grey")
+
+screen(2)
+(atx = seq(brks[1], brks[length(brks)],length.out=length(brks)))
+(atxmid = ( atx[2:length(atx)] + atx[1:(length(atx)-1)])/2)
+image.plot(legend.only=TRUE, smallplot=c(.1,.2, .2,.8), 
+           zlim=range(class$brks), 
+           col=attr(colcode, "palette"), 
+           axis.args=list(at=atxmid, labels=brksnames))
+
+close.screen( all=TRUE)
+\end{verbatim} 
+
+Specified colors with intervals, with par mar is (figure \ref{fig:secp:int_mar}):
+
+\begin{verbatim}
+par(mar=c(5,4,4,8)) 
+poly.image(xlon,xlat,l1$visib,   zlim=range(class$brks),
+           col=attr(colcode, "palette"), 
+           breaks=class$brks)
+map(database="worldHires", region=c("Portugal", "Spain"), add=TRUE, col="grey")
+(atx = seq(brks[1], brks[length(brks)],length.out=length(brks)))
+(atxmid = ( atx[2:length(atx)] + atx[1:(length(atx)-1)])/2)
+image.plot(legend.only=TRUE, zlim=range(class$brks), 
+           col=attr(colcode, "palette"), 
+           axis.args=list(at=atxmid, labels=names(attr(colcode, "table"))), legend.mar=8)
+\end{verbatim} 
+
+
+Specified colors with names, with par mar is (figure \ref{fig:secp:names_mar}):
+
+\begin{verbatim}
+par(mar=c(5,4,4,10)) 
+poly.image(xlon,xlat,l1$visib,   zlim=range(class$brks),
+           col=attr(colcode, "palette"), 
+           breaks=class$brks)
+map(database="worldHires", region=c("Portugal", "Spain"), add=TRUE, col="grey")
+(atx = seq(brks[1], brks[length(brks)],length.out=length(brks)))
+(atxmid = ( atx[2:length(atx)] + atx[1:(length(atx)-1)])/2)
+image.plot(legend.only=TRUE, zlim=range(class$brks), 
+           col=attr(colcode, "palette"), 
+           axis.args=list(at=atxmid, labels=brksnames), legend.mar=10)
+\end{verbatim} 
+
+\begin{figure}[!htp]
+  \centering
+  \subfloat[split.screen with intervals]{\label{fig:spec:int}\includegraphics[page=7,width=0.45\columnwidth]{plot_visib_D3_legenda.pdf}}
+  \subfloat[split.screen with names \hl{legend does not fit}]{\label{fig:spec:names}\includegraphics[page=8,width=0.45\columnwidth]{plot_visib_D3_legenda.pdf}}\\
+  \subfloat[par mar with intervals]{\label{fig:secp:int_mar}\includegraphics[page=9,width=0.45\columnwidth]{plot_visib_D3_legenda.pdf}}
+  \subfloat[par mar with names \hl{legend fits}]{\label{fig:secp:names_mar}\includegraphics[page=10,width=0.45\columnwidth]{plot_visib_D3_legenda.pdf}}
+  \caption{Specified colors.} 
+  \label{fig:spec2}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \FloatBarrier
+% \bibliography{biblio_completa}
+
+\end{document}
